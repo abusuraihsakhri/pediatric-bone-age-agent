@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pediatric-bone-age-engine"
+version = "2.0.0"
+description = "BoneAge Sentinel: Greulich-Pyle & Tanner-Whitehouse Skeletal Maturity Engine"
+readme = "README.md"
+authors = [{ name = "Dr. Abu Suraih Sakhri", email = "abusuraih@example.com" }]
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">=3.9"
+dependencies = []
+
+[project.scripts]
+pediatric-bone-age-engine = "pediatric_bone_age_agent.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/abusuraihsakhri/pediatric-bone-age-engine"
+Repository = "https://github.com/abusuraihsakhri/pediatric-bone-age-engine.git"
