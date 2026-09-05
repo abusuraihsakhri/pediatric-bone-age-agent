@@ -3,8 +3,13 @@ Automated Pytest Test Suite for Pediatric Bone Age Agent.
 Domain: Radiology & Neuroimaging Systems
 Standard: ACR RADS / Fleischner Society / ASPECTS Guidelines
 """
+import os
 import sys
 from pathlib import Path
+
+# Set required environment variable BEFORE importing agents
+os.environ.setdefault("AUDIT_SECRET_KEY", "test-audit-secret-key-for-unit-tests-2026")
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import pytest
@@ -63,3 +68,48 @@ def test_supervisor_consensus_and_audit():
     assert main(["audit", "--task-id", "CLI-TEST-01"]) == 0
     assert main(["chat", "Explain", "specifications"]) == 0
     assert main(["verify-audit"]) == 0
+
+
+def test_metric_validation_rejects_nan():
+    """Ensure NaN metric values are rejected by validation."""
+    import math
+    with pytest.raises(ValueError, match="finite"):
+        SystemTaskPayload(task_id="T-NAN", target_identifier="KEY", primary_metric=math.nan)
+
+
+def test_metric_validation_rejects_infinity():
+    """Ensure infinity metric values are rejected by validation."""
+    import math
+    with pytest.raises(ValueError, match="finite"):
+        SystemTaskPayload(task_id="T-INF", target_identifier="KEY", primary_metric=math.inf)
+
+
+def test_identifier_validation_rejects_path_traversal():
+    """Ensure path traversal characters are rejected in identifiers."""
+    with pytest.raises(ValueError, match="path traversal"):
+        SystemTaskPayload(task_id="../etc/passwd", target_identifier="KEY", primary_metric=1.0)
+
+    with pytest.raises(ValueError, match="path traversal"):
+        SystemTaskPayload(task_id="T1", target_identifier="..\\windows\\system32", primary_metric=1.0)
+
+
+def test_audit_secret_key_required():
+    """Ensure AuditTrail requires a secret key."""
+    from agents.base import AuditTrail
+    # Clear any existing env var to test the error
+    original = os.environ.pop("AUDIT_SECRET_KEY", None)
+    try:
+        trail = AuditTrail()
+        with pytest.raises(SecurityException, match="AUDIT_SECRET_KEY"):
+            _ = trail.secret_key
+    finally:
+        if original:
+            os.environ["AUDIT_SECRET_KEY"] = original
+
+
+def test_audit_secret_key_minimum_length():
+    """Ensure short secret keys are rejected."""
+    from agents.base import AuditTrail
+    trail = AuditTrail(secret_key="short")
+    with pytest.raises(SecurityException, match="at least 16"):
+        _ = trail.secret_key

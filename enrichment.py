@@ -3,10 +3,9 @@ Enrichment Feature Implementation for pediatric-bone-age-agent.
 Generated based on domain-specific requirements in specifications.
 """
 from dataclasses import dataclass, field
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional
 import datetime
 import math
-import json
 
 # =============================================================================
 # 1. ENRICHMENT.MD

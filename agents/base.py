@@ -57,8 +57,24 @@ class PHIGuard:
 class AuditTrail:
     """Cryptographic Tamper-Evident HMAC-SHA256 Audit Trail."""
     def __init__(self, secret_key: Optional[str] = None):
-        self.secret_key = (secret_key or os.getenv("AUDIT_SECRET_KEY", "pediatric-bone-age-agent-master-audit-key-2026")).encode("utf-8")
+        self._secret_key_source = secret_key or os.getenv("AUDIT_SECRET_KEY")
         self.logs: List[Dict[str, Any]] = []
+
+    def _get_secret_key(self) -> bytes:
+        """Lazily resolve and validate the secret key on first use."""
+        key = self._secret_key_source
+        if not key:
+            raise SecurityException(
+                "AUDIT_SECRET_KEY environment variable must be set. "
+                "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
+            )
+        if len(key) < 16:
+            raise SecurityException("AUDIT_SECRET_KEY must be at least 16 characters long.")
+        return key.encode("utf-8")
+
+    @property
+    def secret_key(self) -> bytes:
+        return self._get_secret_key()
 
     def log(self, actor: str, actor_tier: str, event_type: str, details: Dict[str, Any]) -> Dict[str, Any]:
         payload_str = json.dumps(details, sort_keys=True)

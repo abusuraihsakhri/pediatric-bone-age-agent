@@ -80,6 +80,27 @@ python cli.py --task-id <value> --target <value> --primary <value> --secondary <
 
 ---
 
+## 🔧 Configuration
+
+The audit trail requires a secret key to be set via environment variable:
+
+```bash
+# Linux/macOS
+export AUDIT_SECRET_KEY="your-secure-key-minimum-16-chars"
+
+# Windows (PowerShell)
+$env:AUDIT_SECRET_KEY="your-secure-key-minimum-16-chars"
+```
+
+Generate a secure key:
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+See `.env.example` for all configuration options.
+
+---
+
 ## 🧪 Testing & Verification
 
 Run the automated test suite:
@@ -91,7 +112,7 @@ pytest -v
 Execute high-throughput batch simulation benchmarks:
 
 ```bash
-python simulator.py --tasks 1000 --concurrency 8
+python simulator.py 1000
 ```
 
 ---
@@ -100,5 +121,5 @@ python simulator.py --tasks 1000 --concurrency 8
 
 ```bash
 docker build -t pediatric-bone-age-agent .
-docker run -p 8000:8000 pediatric-bone-age-agent
+docker run -e AUDIT_SECRET_KEY="your-secure-key" -p 8000:8000 pediatric-bone-age-agent
 ```
