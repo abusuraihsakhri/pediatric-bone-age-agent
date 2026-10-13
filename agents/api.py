@@ -7,12 +7,13 @@ from pydantic import BaseModel
 from .base import AuditLogger, PHIGuard
 from .models import SystemTaskPayload, ConsensusDossier
 from .supervisor import SystemSupervisor
+from pediatric_bone_age_agent.comparison import compare_bone_ages
 
 supervisor = SystemSupervisor(model_provider="mock")
 
 app = FastAPI(
     title="Pediatric Bone Age Agent API",
-    description="Enterprise Distributed Component Platform (Radiology & Neuroimaging Systems)",
+    description="Demonstration rule engine and descriptive bone-age comparison; not validated for clinical use.",
     version="3.0.0-ENTERPRISE",
 )
 
@@ -23,7 +24,7 @@ class ChatRequest(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"status": "HEALTHY", "service": "pediatric-bone-age-agent", "domain": "Radiology & Neuroimaging Systems", "standard": "ACR RADS / Fleischner Society / ASPECTS Guidelines", "version": "3.0.0-ENTERPRISE"}
+    return {"status": "HEALTHY", "service": "pediatric-bone-age-agent", "domain": "Radiology & Neuroimaging Systems", "mode": "demonstration", "version": "3.0.0-ENTERPRISE"}
 
 
 @app.get("/metrics")
@@ -48,6 +49,23 @@ def api_chat(req: ChatRequest):
         return {"response": ans}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+class BoneAgeCompareRequest(BaseModel):
+    chronological_age_months: float
+    bone_age_months: float
+    assessment_method: str = "Unspecified"
+
+
+@app.post("/api/bone-age/compare")
+def api_bone_age_compare(req: BoneAgeCompareRequest):
+    try:
+        return compare_bone_ages(
+            req.chronological_age_months, req.bone_age_months,
+            req.assessment_method,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @app.get("/api/audit/logs")

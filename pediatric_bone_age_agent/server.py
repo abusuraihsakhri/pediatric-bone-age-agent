@@ -4,6 +4,7 @@ FastAPI REST Application & Webhooks for BoneAge Sentinel: Greulich-Pyle & Tanner
 from typing import Dict, Any, Optional
 from .models import ClinicalCasePayload
 from .agents import BoneAgeCoordinator
+from .comparison import compare_bone_ages
 
 coordinator = BoneAgeCoordinator()
 
@@ -14,7 +15,7 @@ def create_app():
 
         app = FastAPI(
             title="BoneAge Sentinel: Greulich-Pyle & Tanner-Whitehouse Skeletal Maturity Agent",
-            description="Automates pediatric left hand/wrist epiphyseal fusion evaluation, calculating bone age discrepancies (months) and adult height predictions.",
+            description="Demonstration alert rules and manual skeletal-age versus chronological-age arithmetic. No radiograph assessment or height prediction.",
             version="2.0.0-PRO",
         )
 
@@ -30,6 +31,23 @@ def create_app():
 
         class ChatRequest(BaseModel):
             query: str
+
+        class CompareRequest(BaseModel):
+            chronological_age_months: float
+            bone_age_months: float
+            assessment_method: str = "Unspecified"
+
+        @app.post("/api/bone-age/compare")
+        def compare(req: CompareRequest):
+            from fastapi import HTTPException
+            try:
+                return compare_bone_ages(
+                    req.chronological_age_months,
+                    req.bone_age_months,
+                    req.assessment_method,
+                )
+            except ValueError as exc:
+                raise HTTPException(status_code=422, detail=str(exc)) from exc
 
         @app.get("/health")
         def health():

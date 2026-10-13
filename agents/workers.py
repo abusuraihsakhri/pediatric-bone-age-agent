@@ -1,7 +1,7 @@
 """
 Specialized Domain Worker Agents for Pediatric Bone Age Agent.
 Domain: Radiology & Neuroimaging Systems
-Standard: ACR RADS / Fleischner Society / ASPECTS Guidelines
+Standard: demonstration thresholds (not clinical guidelines)
 """
 import uuid
 from typing import Dict, Any, List, Optional
@@ -20,8 +20,8 @@ class InvariantQCWorker:
                 origin_worker="InvariantQCWorker",
                 urgency=UrgencyLevel.ELEVATED,
                 summary="Primary Metric Threshold Exceeded",
-                technical_details=f"Primary measurement ({payload.primary_metric:.2f}) exceeds upper reference limit (25.00) under ACR RADS / Fleischner Society / ASPECTS Guidelines.",
-                actionable_remediation="Initiate recalibration workflow and review secondary parameters.",
+                technical_details=f"Primary measurement ({payload.primary_metric:.2f}) exceeds upper reference limit (25.00) under demonstration thresholds (not clinical guidelines).",
+                actionable_remediation="Review this demonstration threshold; no diagnostic inference is supported.",
             ))
         return alerts
 
@@ -39,7 +39,7 @@ class SafetyEscalationWorker:
                 urgency=UrgencyLevel.CRITICAL_STAT if payload.is_critical_flag else UrgencyLevel.ELEVATED,
                 summary="Critical Safety Interlock Triggered",
                 technical_details=f"CriticalFlag={payload.is_critical_flag} with secondary index {payload.secondary_metric:.2f}.",
-                actionable_remediation="Execute immediate closed-loop escalation and notify attending supervisor.",
+                actionable_remediation="Demo escalation flag only; clinical urgency must be independently determined.",
             ))
         return alerts
 
@@ -57,7 +57,7 @@ class ProtocolConformanceWorker:
                 origin_worker="ProtocolConformanceWorker",
                 urgency=UrgencyLevel.ELEVATED,
                 summary="Protocol Conformance Discordance Detected",
-                technical_details=f"Descriptor '{payload.status_descriptor}' indicates discordance with ACR RADS / Fleischner Society / ASPECTS Guidelines standards.",
-                actionable_remediation="Re-evaluate input specimen or rerun secondary confirmation assay.",
+                technical_details=f"Descriptor '{payload.status_descriptor}' indicates discordance with demonstration thresholds (not clinical guidelines) standards.",
+                actionable_remediation="Review the demonstration descriptor; no clinical diagnosis is generated.",
             ))
         return alerts
