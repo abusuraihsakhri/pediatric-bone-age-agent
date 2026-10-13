@@ -7,8 +7,20 @@ import json
 import sys
 from .models import ClinicalCasePayload
 from .agents import BoneAgeCoordinator
+from .comparison import compare_bone_ages
 
 coordinator = BoneAgeCoordinator()
+
+
+def parse_csv_bool(value):
+    if isinstance(value, bool):
+        return value
+    text = str(value if value is not None else "").strip().lower()
+    if text in ("true", "1", "yes", "y"):
+        return True
+    if text in ("false", "0", "no", "n", ""):
+        return False
+    raise ValueError(f"Invalid boolean value: {value!r}")
 
 
 def main(argv=None):
@@ -22,6 +34,12 @@ def main(argv=None):
     p_audit.add_argument("--secondary", type=float, default=12.5)
     p_audit.add_argument("--stat", action="store_true")
     p_audit.add_argument("--status", default="DISCORDANT")
+
+    # Manual bone-age comparison, not radiograph analysis
+    p_compare = subparsers.add_parser("compare", help="Compare manually assessed bone age with chronological age")
+    p_compare.add_argument("--chronological-months", type=float, required=True)
+    p_compare.add_argument("--bone-months", type=float, required=True)
+    p_compare.add_argument("--method", default="Unspecified")
 
     # Chat
     p_chat = subparsers.add_parser("chat", help="System configuration query")
@@ -39,6 +57,16 @@ def main(argv=None):
 
     args = parser.parse_args(argv)
 
+    if args.command == "compare":
+        try:
+            print(json.dumps(compare_bone_ages(
+                args.chronological_months, args.bone_months, args.method
+            ), indent=2))
+            return 0
+        except ValueError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 1
+
     if args.command == "audit":
         case = ClinicalCasePayload(
             case_id=args.case_id,
@@ -51,7 +79,7 @@ def main(argv=None):
         dossier = coordinator.process_case(case)
         print("=" * 80)
         print(f"  BONEAGE SENTINEL: GREULICH-PYLE & TANNER-WHITEHOUSE SKELETAL MATURITY AGENT")
-        print(f"  Domain: Pediatric Radiology | Standard: Greulich-Pyle & Tanner-Whitehouse Standards")
+        print(f"  Domain: Pediatric Radiology | Mode: demonstration-only numerical thresholds")
         print(f"  Case: {dossier['case_id']} | Status: [{dossier['overall_status']}] | Total Alerts: {dossier['total_alerts']}")
         print("=" * 80)
         for a in dossier["alerts"]:
@@ -73,7 +101,7 @@ def main(argv=None):
             fieldnames = list(reader.fieldnames or [])
             rows = list(reader)
 
-        out_fields = fieldnames + ["overall_status", "total_alerts", "stat_critical_alerts", "consensus_summary"]
+        out_fields = list(dict.fromkeys(fieldnames + ["overall_status", "total_alerts", "stat_critical_alerts", "consensus_summary"]))
         out_rows = []
         for r in rows:
             case = ClinicalCasePayload(
@@ -82,7 +110,7 @@ def main(argv=None):
                 primary_metric=float(r.get("metric_primary", r.get("primary_metric", 15.0))),
                 secondary_metric=float(r.get("metric_secondary", r.get("secondary_metric", 5.0))),
                 status_flag=r.get("status_flag", r.get("status_text", "NORMAL")),
-                is_stat=bool(r.get("is_stat", r.get("critical_flag", False))),
+                is_stat=parse_csv_bool(r.get("is_stat", r.get("critical_flag", False))),
             )
             dossier = coordinator.process_case(case)
             row_dict = dict(r)
@@ -107,6 +135,9 @@ def main(argv=None):
             if app:
                 print(f"Starting BoneAge Sentinel: Greulich-Pyle & Tanner-Whitehouse Skeletal Maturity Agent on http://{args.host}:{args.port}")
                 uvicorn.run(app, host=args.host, port=args.port)
+            else:
+                print("FastAPI is unavailable", file=sys.stderr)
+                return 1
         except ImportError:
             print("FastAPI / uvicorn not installed. Run 'pip install fastapi uvicorn'")
             return 1

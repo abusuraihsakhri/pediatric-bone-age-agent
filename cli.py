@@ -12,6 +12,15 @@ from agents.base import AuditLogger
 supervisor = SystemSupervisor(model_provider="mock")
 
 
+def parse_csv_bool(value):
+    text = str(value if value is not None else "").strip().lower()
+    if text in ("true", "1", "yes", "y"):
+        return True
+    if text in ("false", "0", "no", "n", ""):
+        return False
+    raise ValueError(f"Invalid boolean value: {value!r}")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="pediatric-bone-age-agent", description="Pediatric Bone Age Agent")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -56,7 +65,7 @@ def main(argv=None):
         dossier = supervisor.process_task(payload)
         print("=" * 80)
         print(f"  PEDIATRIC BONE AGE AGENT")
-        print(f"  Domain: Radiology & Neuroimaging Systems | Standard: ACR RADS / Fleischner Society / ASPECTS Guidelines")
+        print(f"  Domain: Radiology & Neuroimaging Systems | Mode: demonstration-only numerical thresholds")
         print(f"  Dossier ID: {dossier.dossier_id} | Urgency: [{dossier.overall_urgency.value}]")
         print("=" * 80)
         for a in dossier.alerts:
@@ -99,7 +108,7 @@ def main(argv=None):
             print(f"Error: Permission denied reading '{args.input}'.", file=sys.stderr)
             return 1
 
-        out_fields = fieldnames + ["overall_urgency", "integrity_status", "total_alerts", "audit_hash"]
+        out_fields = list(dict.fromkeys(fieldnames + ["overall_urgency", "integrity_status", "total_alerts", "audit_hash"]))
         out_rows = []
         for r in rows:
             try:
@@ -109,9 +118,9 @@ def main(argv=None):
                     primary_metric=float(r.get("primary_metric", 15.0)),
                     secondary_metric=float(r.get("secondary_metric", 5.0)),
                     status_descriptor=r.get("status_descriptor", "NOMINAL"),
-                    is_critical_flag=bool(r.get("is_critical_flag", False)),
+                    is_critical_flag=parse_csv_bool(r.get("is_critical_flag", False)),
                 )
-            except (ValueError, Exception) as e:
+            except (ValueError, TypeError) as e:
                 print(f"Warning: Skipping invalid row {r}: {e}", file=sys.stderr)
                 continue
             dossier = supervisor.process_task(payload)
