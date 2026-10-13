@@ -9,6 +9,12 @@ dist/
 build/
 *.egg-info/
 
+# Test and coverage artifacts
+.coverage
+htmlcov/
+.tox/
+.venv/
+
 # Environment files (secrets)
 .env
 .env.local

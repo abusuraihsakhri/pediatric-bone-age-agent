@@ -1,125 +1,64 @@
 # Pediatric Bone Age Agent
 
-> **Domain:** Diagnostic Radiology & Medical Imaging AI  
-> **Reference Guidelines & Standards:** `American College of Radiology (ACR) RADS & Fleischner Society`
+A descriptive **bone-age comparison** utility with a browser interface, Python API/CLI, and separate demonstration-only rule engines.
 
-<div align="center">
+**Clinical scope:** The supported calculation subtracts chronological age (months) from an *independently assessed and manually entered* skeletal age (months). Positive values indicate a greater reported skeletal age; negative values indicate a lower one. It does not interpret radiographs, implement Greulich–Pyle atlas matching or Tanner–Whitehouse scoring, establish clinical reference intervals, diagnose disorders, or predict adult height. The optional method field records the source of the entered estimate; selecting it does not run that method.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB.svg?logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688.svg?logo=fastapi&logoColor=white)
-![Audit Trail](https://img.shields.io/badge/Audit-HMAC--SHA256_Tamper--Evident-brightgreen.svg)
-![Zero-PHI Guard](https://img.shields.io/badge/Guard-Zero--PHI_Outbound-blue.svg)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)
+## Browser application
 
-</div>
+Open **web/index.html** in a modern browser, or run a local static server:
 
----
+~~~bash
+python -m http.server 8080 --directory web
+~~~
 
-## 📖 What It Does
+Then visit http://localhost:8080. Enter ages (0–240 months), select the reporting method, calculate the signed difference, and optionally download the result as CSV. The page uses only relative assets and has no backend dependency. GitHub Pages publishing is configured in **.github/workflows/pages.yml**; availability depends on enabling Pages with **GitHub Actions** as the publishing source.
 
-**Pediatric Bone Age Agent** is an advanced analytical and computational platform implementing Greulich-Pyle & Tanner-Whitehouse Skeletal Maturity Estimator.
+## Python installation and usage
 
----
+Requires Python 3.9 or later.
 
-## ⚙️ Key Capabilities & Algorithmic Modules
+~~~bash
+python -m pip install -e ".[server]"
+pediatric-bone-age-engine compare --chronological-months 120 --bone-months 132 --method Greulich-Pyle
+~~~
 
-### 🔬 Core Algorithmic & Evaluation Engines
+This outputs JSON containing entered ages, the signed difference in months, direction, assessment method, and an explicit limitation statement. Values must be finite numbers between 0 and 240 months.
 
-- **`Severity`** — dedicated module for severity evaluation and state verification.
-- **`DomainKnowledgeRegistry`**: Enterprise domain rules, guideline matrices, and evidence benchmarks.
-- **`AgentAlert`** — dedicated module for agent alert evaluation and state verification.
-- **`EpiphysealCenterEvaluatorAgent`**: Specialized Sub-Agent 1 for pediatric-bone-age-agent
-- **`GreulichPyleMatcherAgent`**: Specialized Sub-Agent 2 for pediatric-bone-age-agent
-- **`HeightPredictionModelAgent`**: Specialized Sub-Agent 3 for pediatric-bone-age-agent
+To run the FastAPI server:
 
----
+~~~bash
+export AUDIT_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
+python cli.py serve --host 127.0.0.1 --port 8000
+~~~
 
-## 💻 CLI Quickstart & Usage
+The descriptive comparison endpoint is **POST /api/bone-age/compare**, accepting **chronological_age_months**, **bone_age_months**, and optional **assessment_method** (Unspecified, Greulich-Pyle, Tanner-Whitehouse, or Other). The API also includes older /api/audit, /api/chat, /api/audit/logs, /health, and /metrics endpoints.
 
-### 1. Guided Interactive Mode
-```bash
-python cli.py
-```
+For Docker, set AUDIT_SECRET_KEY in your environment and run **docker compose up --build**. The sample Compose configuration publishes only to localhost.
 
-### 2. Direct Parameterized Evaluation
-```bash
-python cli.py --task-id <value> --target <value> --primary <value> --secondary <value>
-```
+## Legacy modules and limitations
 
-### Parameter Reference
-- `--task-id`: Specifies input measurement or parameter value.
-- `--target`: Specifies input measurement or parameter value.
-- `--primary`: Specifies input measurement or parameter value.
-- `--secondary`: Specifies input measurement or parameter value.
-- `--critical`: Specifies input measurement or parameter value.
-- `--status`: Specifies input measurement or parameter value.
-- `--input`: Specifies input measurement or parameter value.
-- `--output`: Specifies input measurement or parameter value.
+The standalone cli.py audit command, bone_age_sentinel.py, the packaged audit CLI command, and modules in agents/, enrichment.py, and bone_age_sentinel.py contain general-purpose *demonstration* numeric thresholds and status flags. They are retained for backwards compatibility but **are not validated skeletal-age algorithms**. Alerts, severity categories, guideline references in legacy components, mock-LLM output, and nominal or critical labels must not be used for clinical decision-making.
 
-### Input Data Schema
+The mock language-model adapter does not invoke an external model or verify clinical findings. The HMAC-SHA256 audit trail operates in memory, needs a user-provided secret, and does not provide durable records or tamper-proof storage.
 
-| Field | Description | Requirement |
-|:------|:------------|:------------|
-| `case_id` | Parameter / observation metric | Required |
-| `patient_synthetic_id` | Parameter / observation metric | Required |
-| `metric_primary` | Parameter / observation metric | Required |
-| `metric_secondary` | Parameter / observation metric | Required |
-| `is_stat` | Parameter / observation metric | Required |
-| `status_flag` | Parameter / observation metric | Required |
+## Privacy and security
 
----
+The static browser tool does not upload data, send network requests, use analytics, or retain entered ages beyond the current page session. CSV downloads are generated locally. Do not enter real patient identifiers. The Python server does not implement authentication, role-based access, or regulatory-grade protected health information handling. The heuristic PHI pattern guard does not establish HIPAA compliance. Keep the server private and do not expose it publicly without a separate security review.
 
-## 🛡️ Security & Enterprise Architecture
+Never commit .env or secret keys. Docker build context exclusions protect local environment files. See .env.example for the required audit signing key.
 
-* **Zero-PHI Outbound Interceptor:** Active AST and regex inspection blocking SSNs, MRNs, phone numbers, and patient identifiers.
-* **Tamper-Evident HMAC-SHA256 Audit Trail:** Chained, cryptographically signed logs for every evaluation and state transition.
-* **Air-Gapped LLM Reasoning Adapter:** Agnostic integration for local Ollama instances (`llama3`, `mistral`), Claude 3.5 Sonnet, GPT-4o, and deterministic test mocks.
-* **Active Learning Bayesian Calibration:** Dynamic tracker updating worker reliability weights and monitoring Brier calibration drift.
-* **FastAPI & Prometheus Telemetry:** Exposes OpenAPI 3.1 REST endpoints and operational Prometheus metrics (`/metrics`).
+## Testing
 
----
+~~~bash
+python -m pip install -e ".[server]" pytest httpx
+python -m pytest -q
+node --check web/app.js
+node --test web/app.test.cjs
+~~~
 
-## 🔧 Configuration
+Python regression tests, static JavaScript checks, and package-build checks run in GitHub Actions. Node.js is needed for JavaScript tests, not to run the browser application.
 
-The audit trail requires a secret key to be set via environment variable:
+## Technology and license
 
-```bash
-# Linux/macOS
-export AUDIT_SECRET_KEY="your-secure-key-minimum-16-chars"
-
-# Windows (PowerShell)
-$env:AUDIT_SECRET_KEY="your-secure-key-minimum-16-chars"
-```
-
-Generate a secure key:
-```bash
-python -c "import secrets; print(secrets.token_hex(32))"
-```
-
-See `.env.example` for all configuration options.
-
----
-
-## 🧪 Testing & Verification
-
-Run the automated test suite:
-
-```bash
-pytest -v
-```
-
-Execute high-throughput batch simulation benchmarks:
-
-```bash
-python simulator.py 1000
-```
-
----
-
-## 🐳 Container Deployment
-
-```bash
-docker build -t pediatric-bone-age-agent .
-docker run -e AUDIT_SECRET_KEY="your-secure-key" -p 8000:8000 pediatric-bone-age-agent
-```
+Python, Pydantic, FastAPI (optional server), standard browser JavaScript/HTML/CSS, and HMAC-SHA256. The browser utility targets browsers supporting ES2015 JavaScript, Blob downloads, and URL.createObjectURL. License: [MIT](LICENSE).

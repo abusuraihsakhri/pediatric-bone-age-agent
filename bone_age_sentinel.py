@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 BoneAge Sentinel: Greulich-Pyle & Tanner-Whitehouse Skeletal Maturity Agent
-Automates pediatric left hand/wrist epiphyseal fusion evaluation, calculating bone age discrepancies (months) and adult height predictions.
+Demonstration-only generic threshold engine; does not analyze radiographs or predict adult height.
 
 Domain: Pediatric Radiology
 Author: Dr. Abu Suraih Sakhri
@@ -33,15 +33,15 @@ class Severity(str, Enum):
 class DomainKnowledgeRegistry:
     """Enterprise domain rules, guideline matrices, and evidence benchmarks."""
     SYSTEM_VERSION = "2.0.0-PRO-CLINICAL"
-    ZERO_PHI_COMPLIANCE = True
-    HIPAA_SAFE_HARBOR = "ACTIVE_ON_PREMISES"
+    ZERO_PHI_COMPLIANCE = False
+    HIPAA_SAFE_HARBOR = "NOT_ESTABLISHED"
 
     @staticmethod
     def audit_security_and_integrity(payload: Dict[str, Any]) -> List[str]:
         warnings = []
         for key in payload.keys():
             if any(phi_keyword in key.lower() for phi_keyword in ["patient_name", "ssn", "mrn_raw", "dob_raw"]):
-                warnings.append(f"PHI_DEFENSE_TRIGGERED: Direct identifier '{key}' masked to synthetic token.")
+                warnings.append(f"PHI_DEFENSE_TRIGGERED: Direct identifier '{key}' identified but not modified; avoid entering patient data.")
         return warnings
 
 class AgentAlert:
@@ -166,7 +166,7 @@ class BoneAgeCoordinator:
         if "summary" in q or "status" in q:
             return f"BoneAge Sentinel: Greulich-Pyle & Tanner-Whitehouse Skeletal Maturity Agent currently tracking {len(self.case_registry)} cases in local air-gapped memory."
         elif "guidelines" in q or "protocol" in q:
-            return "All sub-agents operate under validated consensus clinical algorithms and CAP/CLSI/NCCN/WHO standards."
+            return "No validated Greulich-Pyle or Tanner-Whitehouse implementation is present. Demo thresholds only."
         else:
             return f"BoneAge Sentinel: Greulich-Pyle & Tanner-Whitehouse Skeletal Maturity Agent executive agent online. Continuous supervisory monitoring active across all domain parameters."
 
@@ -181,7 +181,7 @@ def create_app():
 
         app = FastAPI(
             title="BoneAge Sentinel: Greulich-Pyle & Tanner-Whitehouse Skeletal Maturity Agent",
-            description="Automates pediatric left hand/wrist epiphyseal fusion evaluation, calculating bone age discrepancies (months) and adult height predictions.",
+            description="Demonstration-only generic threshold engine; does not analyze radiographs or predict adult height.",
             version="1.0.0",
         )
 

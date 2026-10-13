@@ -5,23 +5,29 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pediatric-bone-age-engine"
 version = "2.0.0"
-description = "BoneAge Sentinel: Greulich-Pyle & Tanner-Whitehouse Skeletal Maturity Engine"
+description = "Manual bone-age comparison and demonstration Python rule engine"
 readme = "README.md"
-authors = [{ name = "Dr. Abu Suraih Sakhri", email = "abusuraih@example.com" }]
+authors = [{ name = "Dr. Abu Suraih Sakhri" }]
 license = { text = "MIT" }
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-    "Topic :: Scientific/Engineering :: Medical Science Apps.",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Medical Science Apps",
 ]
 requires-python = ">=3.9"
-dependencies = []
+dependencies = ["pydantic>=2.7,<3"]
+
+[project.optional-dependencies]
+server = ["fastapi>=0.110,<1", "uvicorn>=0.29,<1"]
 
 [project.scripts]
 pediatric-bone-age-engine = "pediatric_bone_age_agent.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/abusuraihsakhri/pediatric-bone-age-engine"
-Repository = "https://github.com/abusuraihsakhri/pediatric-bone-age-engine.git"
+Homepage = "https://github.com/abusuraihsakhri/pediatric-bone-age-agent"
+Repository = "https://github.com/abusuraihsakhri/pediatric-bone-age-agent.git"
+
+[tool.setuptools]
+packages = ["agents", "pediatric_bone_age_agent"]
+py-modules = ["bone_age_sentinel", "cli", "enrichment", "simulator"]
