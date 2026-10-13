@@ -27,3 +27,7 @@ pediatric-bone-age-engine = "pediatric_bone_age_agent.cli:main"
 [project.urls]
 Homepage = "https://github.com/abusuraihsakhri/pediatric-bone-age-agent"
 Repository = "https://github.com/abusuraihsakhri/pediatric-bone-age-agent.git"
+
+[tool.setuptools]
+packages = ["agents", "pediatric_bone_age_agent"]
+py-modules = ["bone_age_sentinel", "cli", "enrichment", "simulator"]
