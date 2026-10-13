@@ -46,7 +46,7 @@ The mock language-model adapter does not invoke an external model or verify clin
 
 The static browser tool does not upload data, send network requests, use analytics, or retain entered ages beyond the current page session. CSV downloads are generated locally. Do not enter real patient identifiers. The Python server does not implement authentication, role-based access, or regulatory-grade protected health information handling. The heuristic PHI pattern guard does not establish HIPAA compliance. Keep the server private and do not expose it publicly without a separate security review.
 
-Never commit .env or secret keys. See .env.example for the required audit signing key.
+Never commit .env or secret keys. Docker build context exclusions protect local environment files. See .env.example for the required audit signing key.
 
 ## Testing
 

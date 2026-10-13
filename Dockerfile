@@ -8,6 +8,9 @@ ENV PYTHONUNBUFFERED=1 \
 COPY . .
 RUN pip install --no-cache-dir ".[server]"
 
+# Runtime uses an unprivileged UID; no writable application directory is required.
+USER 65532:65532
+
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
