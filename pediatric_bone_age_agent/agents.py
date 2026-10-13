@@ -93,7 +93,7 @@ class BoneAgeCoordinator:
             "stat_critical_alerts": stat_count,
             "warning_alerts": warn_count,
             "alerts": [a.to_dict() for a in all_alerts],
-            "guideline_standard": "Greulich-Pyle & Tanner-Whitehouse Standards",
+            "guideline_standard": "Demonstration rules only; not clinically validated",
             "consensus_summary": f"Multi-agent supervision completed across 3 sub-agents with status [{status.value}].",
         }
 
@@ -105,6 +105,6 @@ class BoneAgeCoordinator:
         if "status" in q or "summary" in q:
             return f"BoneAge Sentinel: Greulich-Pyle & Tanner-Whitehouse Skeletal Maturity Agent currently tracking {len(self.case_registry)} cases in on-premises memory."
         elif "guideline" in q or "standard" in q:
-            return "Active clinical surveillance operates under Greulich-Pyle & Tanner-Whitehouse Standards validated protocols."
+            return "No Greulich-Pyle or Tanner-Whitehouse scoring protocol is implemented in the legacy demonstration rules."
         else:
-            return f"BoneAge Sentinel: Greulich-Pyle & Tanner-Whitehouse Skeletal Maturity Agent executive agent online. Zero-PHI air-gapped monitoring active."
+            return f"BoneAge Sentinel: Greulich-Pyle & Tanner-Whitehouse Skeletal Maturity Agent executive agent online. No patient data should be entered. Demonstration-only mode."

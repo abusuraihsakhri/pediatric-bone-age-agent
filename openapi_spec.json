@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Pediatric Bone Age Engine API",
-    "description": "Enterprise Distributed Component Platform (Clinical & Cryptographic AI) adhering to CAP / CLSI / NIST Standards.",
-    "version": "3.0.0-ENTERPRISE",
+    "description": "Demonstration-only generic rule engine plus manually entered skeletal-age comparison; no radiograph analysis or clinically validated interpretation.",
+    "version": "2.0.0",
     "contact": {
       "name": "Dr. Abu Suraih Sakhri",
       "url": "https://github.com/abusuraihsakhri"
@@ -22,10 +22,10 @@
     },
     "/metrics": {
       "get": {
-        "summary": "Prometheus operational metrics",
+        "summary": "Return JSON counts for demonstration requests",
         "responses": {
           "200": {
-            "description": "Prometheus text metrics"
+            "description": "JSON counters"
           }
         }
       }
@@ -76,7 +76,7 @@
     },
     "/api/chat": {
       "post": {
-        "summary": "Air-gapped supervisory conversational assistant",
+        "summary": "Query deterministic demonstration adapter",
         "requestBody": {
           "content": {
             "application/json": {
@@ -107,6 +107,56 @@
         "responses": {
           "200": {
             "description": "Cryptographic audit trail"
+          }
+        }
+      }
+    },
+    "/api/bone-age/compare": {
+      "post": {
+        "summary": "Compare manually entered skeletal age and chronological age (months)",
+        "description": "Descriptive arithmetic only. The skeletal age is entered after independent assessment; no GP/TW scoring or clinical thresholds.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "chronological_age_months": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 240
+                  },
+                  "bone_age_months": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 240
+                  },
+                  "assessment_method": {
+                    "type": "string",
+                    "enum": [
+                      "Unspecified",
+                      "Greulich-Pyle",
+                      "Tanner-Whitehouse",
+                      "Other"
+                    ],
+                    "default": "Unspecified"
+                  }
+                },
+                "required": [
+                  "chronological_age_months",
+                  "bone_age_months"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed difference and direction"
+          },
+          "422": {
+            "description": "Invalid input"
           }
         }
       }

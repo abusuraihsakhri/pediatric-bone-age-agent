@@ -1,7 +1,2 @@
-"""
-Pediatric Bone Age Agent — Enterprise Automated Analytical Suite.
-Domain: Radiology & Neuroimaging Systems
-Standard: ACR RADS / Fleischner Society / ASPECTS Guidelines
-
-"""
-__version__ = "3.0.0-ENTERPRISE"
+"""Legacy demonstration threshold engine; not a validated clinical model."""
+__version__ = "2.0.0"

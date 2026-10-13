@@ -14,7 +14,7 @@ supervisor = SystemSupervisor(model_provider="mock")
 app = FastAPI(
     title="Pediatric Bone Age Agent API",
     description="Demonstration rule engine and descriptive bone-age comparison; not validated for clinical use.",
-    version="3.0.0-ENTERPRISE",
+    version="2.0.0",
 )
 
 
@@ -24,7 +24,7 @@ class ChatRequest(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"status": "HEALTHY", "service": "pediatric-bone-age-agent", "domain": "Radiology & Neuroimaging Systems", "mode": "demonstration", "version": "3.0.0-ENTERPRISE"}
+    return {"status": "HEALTHY", "service": "pediatric-bone-age-agent", "domain": "Radiology & Neuroimaging Systems", "mode": "demonstration", "version": "2.0.0"}
 
 
 @app.get("/metrics")

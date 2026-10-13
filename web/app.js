@@ -57,6 +57,7 @@
             ? "Entered ages are equal."
             : "Entered skeletal age is " + last.direction + " relative to chronological age.";
         result.hidden = false;
+        document.getElementById("initial").hidden = true;
         exportButton.disabled = false;
       } catch (e) {
         error.textContent = e.message;
@@ -65,6 +66,7 @@
 
     form.addEventListener("reset", function () {
       result.hidden = true;
+      document.getElementById("initial").hidden = false;
       error.textContent = "";
       exportButton.disabled = true;
       last = null;
